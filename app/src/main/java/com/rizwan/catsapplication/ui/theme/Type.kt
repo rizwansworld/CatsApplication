@@ -2,12 +2,23 @@ package com.rizwan.catsapplication.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.rizwan.catsapplication.R
+
+val NewsReader = FontFamily(
+    Font(R.font.newsreader_bold, FontWeight.Bold)
+)
 
 // Set of Material typography styles to start with
 val Typography = Typography(
+    headlineMedium = TextStyle(
+        fontFamily = NewsReader,
+        fontWeight = FontWeight.Bold,
+        fontSize = 30.sp
+    ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,

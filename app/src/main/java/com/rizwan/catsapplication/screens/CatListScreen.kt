@@ -1,6 +1,5 @@
 package com.rizwan.catsapplication.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,8 +16,12 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,72 +42,87 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
 import com.rizwan.catsapplication.R
 import com.rizwan.catsapplication.models.Cat
+import com.rizwan.catsapplication.models.CatsState
 import com.rizwan.catsapplication.models.Favorite
 import com.rizwan.catsapplication.navigation.CAT_DETAIL_SCREEN
 import com.rizwan.catsapplication.viewModel.CatViewModel
 import com.rizwan.catsapplication.viewModel.FavoritesViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatListScreen(
     navHostController: NavHostController
 ) {
 
     val viewModel: CatViewModel = hiltViewModel()
-    val cats: List<Cat> by viewModel.cats.collectAsState()
+    val catsState: CatsState by viewModel.cats.collectAsState()
+
+    val pullRefreshState = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+    val onRefresh: () -> Unit = {
+        coroutineScope. launch {
+            viewModel.getCats()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Black)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 30.dp)
         ) {
-            HeaderOrViewStory()
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize(1f)
+            Header(isDarkBackground = true)
+            PullToRefreshBox(
+                state = pullRefreshState,
+                isRefreshing = catsState.isLoading,
+                onRefresh = onRefresh
             ) {
-                items(cats) {
-                    CatItem(cat = it) {
-                        navHostController.currentBackStackEntry?.savedStateHandle?.set(
-                            "data",
-                            it
-                        )
-                        navHostController.navigate(CAT_DETAIL_SCREEN)
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize(1f)
+                ) {
+                    items(catsState.cats) {
+                        CatItem(cat = it, isDarkBackground = true) {
+                            navHostController.currentBackStackEntry?.savedStateHandle?.set(
+                                "data",
+                                it
+                            )
+                            navHostController.navigate(CAT_DETAIL_SCREEN)
+                        }
                     }
                 }
             }
         }
-
     }
 
 }
 
 @Composable
-fun HeaderOrViewStory() {
+fun Header(isDarkBackground: Boolean) {
     Column(
         modifier = Modifier
+            .background(if (isDarkBackground) Color.Black else Color.White)
             .fillMaxWidth()
             .padding(start = 20.dp, top = 20.dp)
     ) {
-        Header()
+        HeaderText(isDarkBackground)
     }
 }
 
 @Composable
-fun Header() {
+fun HeaderText(isDarkBackground: Boolean) {
 
     val annotatedString = buildAnnotatedString {
         withStyle(
             style = SpanStyle(
-                color = Color.Black,
+                color = if (isDarkBackground) Color.White else Color.Black,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.W300
             )
@@ -113,7 +131,7 @@ fun Header() {
         }
         withStyle(
             style = SpanStyle(
-                color = Color.Black,
+                color = if (isDarkBackground) Color.White else Color.Black,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
             )
@@ -129,7 +147,8 @@ fun Header() {
 @Composable
 fun CatItem(
     cat: Cat,
-    onClick: () -> Unit = {}
+    isDarkBackground: Boolean,
+    onClick: () -> Unit = {},
 ) {
 
     val favoritesViewModel: FavoritesViewModel = hiltViewModel()
@@ -178,6 +197,8 @@ fun CatItem(
         Text(
             text = cat.name,
             textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineMedium,
+            color = if (isDarkBackground) Color.White else Color.Black,
             modifier = Modifier
                 .fillMaxWidth(1f)
                 .padding(16.dp, 0.dp)
@@ -185,19 +206,10 @@ fun CatItem(
         Text(
             text = "Origin: ${cat.origin}",
             textAlign = TextAlign.Center,
+            color = if (isDarkBackground) Color.White else Color.Black,
             modifier = Modifier
                 .fillMaxWidth(1f)
                 .padding(16.dp, 4.dp)
         )
     }
 }
-
-//@SuppressLint("UnnecessaryComposedModifier")
-//fun Modifier.noRippleEffect(onClick: () -> Unit) = composed {
-//    clickable(
-//        interactionSource = MutableInteractionSource(),
-//        indication = null
-//    ) {
-//        onClick()
-//    }
-//}

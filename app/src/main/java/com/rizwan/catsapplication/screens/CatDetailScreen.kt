@@ -32,8 +32,8 @@ fun CatDetailScreen (
                 .fillMaxSize()
                 .padding(top = 30.dp)
         ) {
-            HeaderOrViewStory()
-            CatItem(data)
+            Header(isDarkBackground = false)
+            CatItem(data, isDarkBackground = false)
             Text(
                 text = "Lifespan : ${data.lifeSpan}",
                 modifier = Modifier.fillMaxWidth().padding(all = 20.dp),
@@ -41,7 +41,9 @@ fun CatDetailScreen (
             )
             Text(
                 text = data.description,
-                modifier = Modifier.fillMaxWidth().padding(all = 20.dp),
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = 20.dp,
+                ),
                 textAlign = TextAlign.Center
             )
         }
